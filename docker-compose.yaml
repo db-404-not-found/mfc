@@ -1,0 +1,52 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:15
+    restart: unless-stopped
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-inference}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    image: inference
+    depends_on:
+      - db
+    restart: unless-stopped
+    build:
+      context: ./
+      dockerfile: docker/inference/backend.dockerfile
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-inference}
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+    command: gunicorn -c backend/gunicorn.conf.py backend.main:app
+    ports:
+      - 8003:8000
+
+  rabbitmq:
+    image: rabbitmq
+    restart: always
+
+  worker:
+    build:
+      context: ./
+      dockerfile: docker/inference/backend.dockerfile
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-inference}
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+    command: celery -A backend.tasks.celery worker --loglevel=info --logfile=celery.log
+
+
+volumes:
+  postgres_data:
+    driver: local
