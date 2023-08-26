@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from backend.api.deps import DatabaseHolderMarker
 from backend.api.v1.schemas import QuestionQuerySchema, QuestionResponseSchema
 from backend.db.holder import DatabaseHolder
-from backend.tasks import make_inference
+from backend.celery.tasks import make_inference
 
 router = APIRouter(prefix="/v1")
 
