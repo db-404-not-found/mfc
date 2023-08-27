@@ -6,12 +6,14 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from prometheus_fastapi_instrumentator import Instrumentator
 from sqlalchemy.ext.asyncio import AsyncEngine
 
 from backend.api.deps import (
     DatabaseEngineMarker,
     DatabaseHolderMarker,
     DatabaseSessionMarker,
+    InstrumentatorMarker,
     SettingsMarker,
 )
 from backend.api.handlers import http_exception_handler
@@ -27,11 +29,13 @@ from backend.views.deps import JinjaMarker
 from backend.views.router import view_router
 
 PROJECT_ROOT = Path("./backend").resolve()
-print(PROJECT_ROOT)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    instrumentator: Instrumentator = app.dependency_overrides[InstrumentatorMarker]()
+    instrumentator.expose(app)
+
     yield
 
     engine: AsyncEngine = app.dependency_overrides[DatabaseEngineMarker]()
@@ -74,9 +78,11 @@ def setup_app(settings: Settings) -> FastAPI:
     app.mount("/static", StaticFiles(directory=PROJECT_ROOT / "static"), name="static")
 
     templates = Jinja2Templates(directory=PROJECT_ROOT / "templates")
+    instrumentator = Instrumentator().instrument(app)
 
     app.dependency_overrides.update(
         {
+            InstrumentatorMarker: lambda: instrumentator,
             SettingsMarker: lambda: settings,
             DatabaseEngineMarker: lambda: engine,
             DatabaseSessionMarker: lambda: session_factory,

@@ -39,7 +39,7 @@ class Settings(BaseSettings):
             database or self.POSTGRES_DB,
         )
 
-    def build_celery_broker_url(
+    def build_celery_url(
         self,
         *,
         driver: str | None = None,

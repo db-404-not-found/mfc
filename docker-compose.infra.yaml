@@ -4,7 +4,6 @@ services:
   minio:
     image: minio/minio:latest
     restart: unless-stopped
-    container_name: infra_minio
     command: server --console-address ":9001" /data/
     ports:
       - 9000:9000
@@ -19,8 +18,7 @@ services:
     networks:
       - mlflow_network
 
-  db:
-    container_name: infra_db
+  infra_db:
     image: postgres:15
     restart: unless-stopped
     environment:
@@ -33,7 +31,6 @@ services:
       - mlflow_network
 
   mlflow:
-    container_name: infra_mlflow
     restart: unless-stopped
     build:
       context: ./docker/infra/mlflow
@@ -41,11 +38,11 @@ services:
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_HOST: db
+      POSTGRES_HOST: infra_db
       POSTGRES_PORT: 5432
       POSTGRES_DB: ${POSTGRES_DB}
 
-      MLFLOW_PORT: ${MLFLOW_PORT:-8000}
+      MLFLOW_PORT: ${MLFLOW_PORT}
       MLFLOW_TRACKING_USERNAME: ${MLFLOW_USER}
       MLFLOW_TRACKING_PASSWORD: ${MLFLOW_PASSWORD}
       MLFLOW_S3_ENDPOINT_URL: http://minio:9000
@@ -55,8 +52,7 @@ services:
     networks:
       - mlflow_network
 
-  nginx:
-    container_name: infra_nginx
+  infra_nginx:
     restart: unless-stopped
     build:
       context: ./docker/infra/nginx
@@ -97,8 +93,6 @@ services:
     restart: unless-stopped
     environment:
       INFERENCE_BACKEND_HOST: ${INFERENCE_BACKEND_HOST}
-      INFERENCE_BACKEND_PORT: ${INFERENCE_BACKEND_PORT}
-
 
     ports:
       - 9090:9090
@@ -109,7 +103,6 @@ services:
 
   grafana:
     image: grafana/grafana:latest
-    container_name: dev_grafana
     restart: unless-stopped
     user: '472'
     ports:
