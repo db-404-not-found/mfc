@@ -12,3 +12,7 @@ class DatabaseSessionMarker:
 
 class SettingsMarker:
     pass
+
+
+class InstrumentatorMarker:
+    pass
