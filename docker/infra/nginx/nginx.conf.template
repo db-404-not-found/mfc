@@ -1,0 +1,15 @@
+upstream mlflow {
+    server mlflow:${MLFLOW_PORT};
+}
+
+server {
+    listen 80;
+
+    auth_basic "Administrator's Area";
+    auth_basic_user_file /etc/mlflow/.htpasswd;
+
+    location / {
+        proxy_pass http://mlflow;
+        proxy_redirect off;
+    }
+}

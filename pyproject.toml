@@ -1,0 +1,55 @@
+[tool.poetry]
+name = "mfc"
+version = "0.1.0"
+description = ""
+authors = ["404 Team"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.101.1"
+pydantic-settings = "^2.0.3"
+celery = "^5.3.1"
+asyncpg = "^0.28.0"
+psycopg2-binary = "^2.9.7"
+alembic = "^1.11.3"
+pre-commit = "^3.3.3"
+mypy = "^1.5.1"
+sqlalchemy = "^2.0.20"
+sqlalchemy-utils = "^0.41.1"
+uvicorn = "^0.23.2"
+loguru = "^0.7.0"
+gunicorn = "^21.2.0"
+jinja2 = "^3.1.2"
+prometheus-fastapi-instrumentator = "^6.1.0"
+torch = "^2.0.1"
+transformers = "^4.32.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+target-version = ["py311"]
+
+[tool.isort]
+known_local_folder = "backend"
+py_version = "311"
+profile = "black"
+
+[tool.mypy]
+plugins = ["pydantic.mypy", "sqlalchemy.ext.mypy.plugin"]
+check_untyped_defs = true
+disallow_incomplete_defs = true
+disallow_untyped_defs = true
+ignore_missing_imports = false
+no_implicit_optional = true
+
+[[tool.mypy.overrides]]
+module = "sqlalchemy_utils.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "celery.*"
+ignore_missing_imports = true
