@@ -1,7 +1,11 @@
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncEngine
 
 from backend.api.deps import (
@@ -19,6 +23,11 @@ from backend.db.engine import (
     create_holder,
     create_session_factory,
 )
+from backend.views.deps import JinjaMarker
+from backend.views.router import view_router
+
+PROJECT_ROOT = Path("./backend").resolve()
+print(PROJECT_ROOT)
 
 
 @asynccontextmanager
@@ -38,6 +47,14 @@ def setup_app(settings: Settings) -> FastAPI:
         lifespan=lifespan,
     )
 
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
     engine = create_engine(
         connection_uri=build_db_connection_uri(
             host=settings.POSTGRES_HOST,
@@ -51,7 +68,12 @@ def setup_app(settings: Settings) -> FastAPI:
     session_factory = create_session_factory(engine=engine)
 
     app.include_router(api_router)
+    app.include_router(view_router)
     app.exception_handler(HTTPException)(http_exception_handler)
+
+    app.mount("/static", StaticFiles(directory=PROJECT_ROOT / "static"), name="static")
+
+    templates = Jinja2Templates(directory=PROJECT_ROOT / "templates")
 
     app.dependency_overrides.update(
         {
@@ -59,6 +81,7 @@ def setup_app(settings: Settings) -> FastAPI:
             DatabaseEngineMarker: lambda: engine,
             DatabaseSessionMarker: lambda: session_factory,
             DatabaseHolderMarker: create_holder(session_factory=session_factory),
+            JinjaMarker: lambda: templates,
         }
     )
 

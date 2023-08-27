@@ -1,4 +1,4 @@
-version: "3.8"
+version: '3.8'
 
 services:
   minio:
@@ -85,10 +85,10 @@ services:
     expose:
       - 9100
     command:
-      - '--path.procfs=/host/proc'
-      - '--path.rootfs=/rootfs'
-      - '--path.sysfs=/host/sys'
-      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+      - --path.procfs=/host/proc
+      - --path.rootfs=/rootfs
+      - --path.sysfs=/host/sys
+      - --collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)
 
   prometheus:
     build:
@@ -98,20 +98,20 @@ services:
     environment:
       INFERENCE_BACKEND_HOST: ${INFERENCE_BACKEND_HOST}
       INFERENCE_BACKEND_PORT: ${INFERENCE_BACKEND_PORT}
-  
-      
-    ports: 
+
+
+    ports:
       - 9090:9090
     networks:
       - metriks_network
     volumes:
       - prometheus_data:/prometheus
-  
+
   grafana:
     image: grafana/grafana:latest
     container_name: dev_grafana
     restart: unless-stopped
-    user: "472"
+    user: '472'
     ports:
       - 3000:3000
     volumes:
