@@ -4,13 +4,13 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from backend.api.deps import DatabaseHolderMarker
 from backend.api.v1.schemas import QuestionQuerySchema, QuestionResponseSchema
-from backend.db.holder import DatabaseHolder
 from backend.celery.tasks import make_inference
+from backend.db.holder import DatabaseHolder
 
 router = APIRouter(prefix="/v1")
 
 
-@router.post("/inference")
+@router.post("/inference", tags=["inference"])
 async def create_inference(
     data: QuestionQuerySchema, holder: DatabaseHolder = Depends(DatabaseHolderMarker)
 ) -> QuestionResponseSchema:
@@ -23,7 +23,7 @@ async def create_inference(
     return QuestionResponseSchema.model_validate(task)
 
 
-@router.get("/tasks/{task_id}")
+@router.get("/tasks/{task_id}", tags=["inference"])
 async def get_task_by_id(
     task_id: UUID, holder: DatabaseHolder = Depends(DatabaseHolderMarker)
 ) -> QuestionResponseSchema:

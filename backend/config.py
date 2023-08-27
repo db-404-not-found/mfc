@@ -5,7 +5,7 @@ class Settings(BaseSettings):
     TEST: bool = False
     DEBUG: bool = False
     VERSION: str = "0.0.1"
-    DESCRIPTION: str = "Best project ever"
+    DESCRIPTION: str = "MFC Helper"
 
     PROJECT_NAME: str = "404"
 
